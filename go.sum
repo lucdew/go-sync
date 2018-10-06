@@ -1,0 +1,10 @@
+github.com/OneOfOne/xxhash v1.2.1 h1:otpa3jdyMtcQaTo7pnbm01EIn4cvsDF6+d6zTxFXHfw=
+github.com/OneOfOne/xxhash v1.2.1/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
+github.com/Sirupsen/logrus v1.0.4 h1:yilvuj073Hm7wwwz12E96GjrdivMNuTMJk9ddjde+D8=
+github.com/Sirupsen/logrus v1.0.4/go.mod h1:rmk17hk6i8ZSAJkSDa7nOxamrG+SP4P0mm+DAvExv4U=
+github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536 h1:rHnpq7uNlix5l7tWZ55iJcHHrxCPnOVF4FGb7qOT2Jc=
+github.com/docopt/docopt-go v0.0.0-20160216232012-784ddc588536/go.mod h1:WwZ+bS3ebgob9U8Nd0kOddGdZWjyMGR8Wziv+TBNwSE=
+golang.org/x/crypto v0.0.0-20171231215028-0fcca4842a8d h1:GrqEEc3+MtHKTsZrdIGVoYDgLpbSRzW1EF+nLu0PcHE=
+golang.org/x/crypto v0.0.0-20171231215028-0fcca4842a8d/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
+golang.org/x/sys v0.0.0-20171222143536-83801418e1b5 h1:2k9P7RP0OBdZAif5o4fN+SddnLEnUa2d8nHJnE45SOE=
+golang.org/x/sys v0.0.0-20171222143536-83801418e1b5/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

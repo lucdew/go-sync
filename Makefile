@@ -8,16 +8,14 @@ BUILDDIR := ${PREFIX}/bin
 
 all: clean build
 
-deps:
-	dep ensure
-
 .PHONY: build
 build: $(NAME)
 
 $(NAME): *.go
 	mkdir -p $(BUILDDIR)
 	@echo "+ $@"
-	go build -o $(BUILDDIR)/$(NAME) .
+	GOOS=linux GOARCH=amd64 go build -o $(BUILDDIR)/$(NAME) .
+	GOOS=windows GOARCH=amd64 go build -o $(BUILDDIR)/$(NAME).exe .
 
 .PHONY: clean
 clean: ## Cleanup any build binaries or packages

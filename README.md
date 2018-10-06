@@ -14,6 +14,20 @@ If you are on Linux/Unix, you'd better use rsync
 
 * does not follow links, neither create them
 
+# Build
+
+* Install go>=1.11
+* Run the Makefile `make`
+* The binary is copied into the bin directory
+
 # Usage
 
-TBD
+Example, mirror folder source1 and source2 into the destination directory destDir in dry-run mode
+```
+gsync -s source1 -s source2 -m -d destDir --dry-run
+```
+
+Then
+```
+gsync -s source1 -s source2 -m -d destDir
+```

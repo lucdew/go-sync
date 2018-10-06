@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
 	xxhash "github.com/OneOfOne/xxhash"
 	log "github.com/Sirupsen/logrus"
@@ -26,6 +27,7 @@ func (f *customFormatter) Format(entry *log.Entry) ([]byte, error) {
 var (
 	destDir string
 	mirror  bool
+	dryRun  bool
 )
 
 func doCopyFile(srcDir string, srcFi os.FileInfo, destPath string) error {
@@ -52,12 +54,26 @@ func doCopyFile(srcDir string, srcFi os.FileInfo, destPath string) error {
 }
 
 func copyFile(srcDir string, srcFi os.FileInfo, destPath string) error {
-
-	err := doCopyFile(srcDir, srcFi, destPath)
-	if err != nil {
-		return err
+	if !dryRun {
+		err := doCopyFile(srcDir, srcFi, destPath)
+		if err != nil {
+			return err
+		}
+		return os.Chtimes(destPath, srcFi.ModTime(), srcFi.ModTime())
 	}
-	return os.Chtimes(destPath, srcFi.ModTime(), srcFi.ModTime())
+	return nil
+}
+
+func mkDir(dirPath string, dirMode os.FileMode, dirModTime time.Time) error {
+	if !dryRun {
+		if err := os.Mkdir(dirPath, dirMode); err != nil {
+			return err
+		}
+		return os.Chtimes(dirPath, dirModTime, dirModTime)
+	} else {
+		log.Infof("Creating directory %s\n", dirPath)
+		return nil
+	}
 }
 
 func hashFile(srcFilePath string) (uint64, error) {
@@ -104,10 +120,7 @@ func syncFolder(folderAbsPath string, folderRelativePath string, destCreated boo
 			if err != nil {
 				return err
 			}
-			if err = os.Mkdir(destAbsPath, srcStats.Mode()); err != nil {
-				return err
-			}
-			if err = os.Chtimes(destAbsPath, srcStats.ModTime(), srcStats.ModTime()); err != nil {
+			if err = mkDir(destAbsPath, srcStats.Mode(), srcStats.ModTime()); err != nil {
 				return err
 			}
 		}
@@ -126,14 +139,9 @@ func syncFolder(folderAbsPath string, folderRelativePath string, destCreated boo
 			log.Debugf("%s does not exist\n", destPath)
 
 			if srcFi.IsDir() {
-
-				if err = os.Mkdir(destPath, srcFi.Mode()); err != nil {
+				if err = mkDir(destPath, srcFi.Mode(), srcFi.ModTime()); err != nil {
 					return err
 				}
-				if err = os.Chtimes(destPath, srcFi.ModTime(), srcFi.ModTime()); err != nil {
-					return err
-				}
-
 				syncFolder(srcAbsPath, srcRelPath, true)
 			} else {
 				if err = copyFile(folderAbsPath, srcFi, destPath); err != nil {
@@ -170,17 +178,20 @@ func syncFolder(folderAbsPath string, folderRelativePath string, destCreated boo
 			}
 
 			delete(destFilesMap, srcName)
-
 		}
 
 	}
 
 	if mirror {
 		for _, v := range destFilesMap {
-			if err = os.RemoveAll(path.Join(destAbsPath, v.Name())); err != nil {
-				return err
+			if !dryRun {
+				if err = os.RemoveAll(path.Join(destAbsPath, v.Name())); err != nil {
+					return err
+				}
+				log.Debugf("Deleted %s\n", path.Join(destAbsPath, v.Name()))
+			} else {
+				log.Infof("Deleting %s\n", path.Join(destAbsPath, v.Name()))
 			}
-			log.Debugf("Deleted %s", path.Join(destAbsPath, v.Name()))
 		}
 	}
 
@@ -194,7 +205,7 @@ func main() {
 	usage := `gsync.
 
 Usage:
-  gsync -s source_folder... -d destination_folder [-m | --mirror] [-v | --verbose]
+  gsync -s source_folder... -d destination_folder [-m | --mirror] [-v | --verbose] [-y | --dry-run]
   gsync -h | --help
   gsync --version
 
@@ -203,8 +214,9 @@ Options:
   --version  Show version.
   -s source_folder  Source folder.
   -d destination_folder  Destination folder.
-	-m --mirror  Mirror.
-	-v --verbose  verbose mode`
+  -m --mirror  Mirror.
+  -y --dry-run  Dry run mode.
+  -v --verbose  verbose mode`
 
 	arguments, _ := docopt.Parse(usage, nil, true, "gsync 1.0", false)
 
@@ -215,6 +227,11 @@ Options:
 	sourceDirs := arguments["-s"].([]string)
 	destDir = arguments["-d"].(string)
 	mirror = arguments["--mirror"].(bool)
+	dryRun = arguments["--dry-run"].(bool)
+
+	if dryRun {
+		log.Info("!!! Dry run mode !!!\n")
+	}
 
 	sourceDirsInfo := make([]os.FileInfo, len(sourceDirs))
 	for idx, sDir := range sourceDirs {
@@ -248,6 +265,10 @@ Options:
 			log.Fatal(err)
 		}
 
+	}
+
+	if dryRun {
+		log.Info("!!! Dry run mode !!!\n")
 	}
 
 }
